@@ -20,9 +20,9 @@ const signupSchema = z.object({
 });
 
 const loginSchema = z.object({
-  email: z.string().trim().email("Email invalide"),
+  email: z.string().trim().email("Email invalide").min(1),
   password: z.string().min(1, "Requis"),
-});
+}).required();
 
 export default function Auth() {
   const navigate = useNavigate();
