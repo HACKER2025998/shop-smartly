@@ -85,13 +85,25 @@ export default function AdminProducts() {
   const save = async () => {
     const parsed = productSchema.safeParse(form);
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
+    const payload = {
+      name: parsed.data.name,
+      description: parsed.data.description ?? null,
+      price: parsed.data.price,
+      discounted_price: parsed.data.discounted_price,
+      stock: parsed.data.stock,
+      stock_threshold: parsed.data.stock_threshold,
+      category_id: parsed.data.category_id,
+      required_plan: parsed.data.required_plan,
+      is_active: parsed.data.is_active,
+      image_url: parsed.data.image_url,
+    };
     if (editing) {
-      const { error } = await supabase.from("products").update(parsed.data).eq("id", editing.id);
+      const { error } = await supabase.from("products").update(payload).eq("id", editing.id);
       if (error) { toast.error(error.message); return; }
       await supabase.from("activity_logs").insert({ actor_id: user?.id, action: "product_updated", entity_type: "product", entity_id: editing.id });
       toast.success("Produit mis à jour");
     } else {
-      const { data, error } = await supabase.from("products").insert(parsed.data).select().single();
+      const { data, error } = await supabase.from("products").insert(payload).select().single();
       if (error) { toast.error(error.message); return; }
       await supabase.from("activity_logs").insert({ actor_id: user?.id, action: "product_created", entity_type: "product", entity_id: data.id });
       toast.success("Produit créé");
