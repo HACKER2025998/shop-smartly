@@ -31,7 +31,7 @@ export function AdminLayout() {
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <div className="font-display font-extrabold text-lg leading-none">NEONO</div>
+              <div className="font-display font-extrabold text-lg leading-none">E-shop</div>
               <div className="text-xs text-sidebar-accent-foreground/60 mt-0.5">Admin</div>
             </div>
           </div>

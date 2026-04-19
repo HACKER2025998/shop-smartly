@@ -41,7 +41,7 @@ export function ShopLayout({ children }: { children: React.ReactNode }) {
             <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow group-hover:scale-110 transition-transform">
               <Sparkles className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-extrabold text-xl tracking-tight">NEONO</span>
+            <span className="font-display font-extrabold text-xl tracking-tight">E-shop</span>
           </Link>
           {profile?.plan && profile.plan !== "free" && (
             <span className={cn(
