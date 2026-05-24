@@ -55,7 +55,7 @@ export function ProductCard({ product, isLiked, onLikeChange }: {
   const addToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) { navigate("/auth"); return; }
-    if (locked) { toast.error(`Réservé au plan ${product.required_plan.toUpperCase()}`); return; }
+    if (locked) { toast.error(`Réservé au plan ${product.required_plan}`); return; }
     if (product.stock < 1) { toast.error("Rupture de stock"); return; }
     setBusy(true);
     const { data: existing } = await supabase
@@ -67,86 +67,98 @@ export function ProductCard({ product, isLiked, onLikeChange }: {
       await supabase.from("cart_items").insert({ user_id: user.id, product_id: product.id, quantity: 1 });
     }
     setBusy(false);
-    toast.success("Ajouté au panier");
+    toast.success("Ajouté au panier 🛍️");
   };
 
   return (
     <>
       <div
         onClick={() => navigate(`/produit/${product.id}`)}
-        className="group bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-elegant transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-border"
+        className="group bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-elegant transition-all duration-300 hover:-translate-y-0.5 cursor-pointer border border-border"
       >
+        {/* Image */}
         <div className="relative aspect-square bg-muted overflow-hidden">
           {product.image_url ? (
             <img
               src={product.image_url}
               alt={product.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              <ShoppingBag className="w-12 h-12 opacity-30" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-secondary/30">
+              <ShoppingBag className="w-12 h-12 text-muted-foreground opacity-30" />
             </div>
           )}
+
           {hasDiscount && (
-            <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-bold px-2 py-1 rounded-md uppercase">
+            <span className="absolute top-2 left-2 bg-accent text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
               Promo
             </span>
           )}
           {product.required_plan !== "free" && (
             <span className={cn(
-              "absolute top-3 right-3 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider",
-              product.required_plan === "premium" ? "bg-gradient-premium text-primary-foreground" : "bg-secondary text-secondary-foreground"
+              "absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase",
+              product.required_plan === "premium" ? "bg-gradient-premium text-white" : "bg-secondary text-secondary-foreground"
             )}>
               {product.required_plan === "premium" ? "★ Premium" : "Medium"}
             </span>
           )}
           {locked && (
-            <div className="absolute inset-0 bg-background/70 backdrop-blur-sm flex items-center justify-center">
-              <Lock className="w-10 h-10 text-primary" />
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+              <div className="bg-white rounded-2xl px-3 py-2 shadow-card flex items-center gap-2">
+                <Lock className="w-4 h-4 text-primary" />
+                <span className="text-xs font-semibold text-foreground">{product.required_plan}</span>
+              </div>
             </div>
           )}
+
+          {/* Like button */}
           <button
             onClick={toggleLike}
             disabled={busy}
-            className="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-background/80 backdrop-blur-md flex items-center justify-center hover:scale-110 transition-transform"
+            className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-white shadow-card flex items-center justify-center hover:scale-110 transition-transform active:scale-95"
             aria-label="J'aime"
           >
-            <Heart className={cn("w-5 h-5 transition-all", isLiked ? "fill-accent text-accent" : "text-foreground")} />
+            <Heart className={cn("w-4 h-4 transition-all", isLiked ? "fill-accent text-accent" : "text-muted-foreground")} />
           </button>
         </div>
-        <div className="p-4 space-y-3">
-          <h3 className="font-semibold leading-tight line-clamp-2">{product.name}</h3>
-          <div className="flex items-end justify-between">
+
+        {/* Infos */}
+        <div className="p-3 space-y-2">
+          <h3 className="font-semibold text-sm leading-tight line-clamp-2 text-foreground">{product.name}</h3>
+          <div className="flex items-center justify-between gap-1">
             <div>
               {hasDiscount && (
-                <div className="text-xs text-muted-foreground line-through">{formatFCFA(product.price)}</div>
+                <div className="text-[10px] text-muted-foreground line-through">{formatFCFA(product.price)}</div>
               )}
-              <div className="font-display font-extrabold text-xl text-primary">{formatFCFA(price)}</div>
+              <div className="font-display font-extrabold text-base text-primary">{formatFCFA(price)}</div>
             </div>
             <div className="flex gap-1">
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={(e) => { e.stopPropagation(); setShareOpen(true); }}
+                className="w-8 h-8 rounded-xl"
                 aria-label="Partager"
               >
-                <Share2 className="w-4 h-4" />
+                <Share2 className="w-3.5 h-3.5" />
               </Button>
               <Button
                 size="icon"
                 onClick={addToCart}
                 disabled={busy || locked || product.stock < 1}
-                className="bg-primary text-primary-foreground hover:bg-primary-glow shadow-glow"
+                className="w-8 h-8 rounded-xl bg-primary text-white hover:bg-primary/90 shadow-glow"
                 aria-label="Ajouter au panier"
               >
-                <ShoppingBag className="w-4 h-4" />
+                <ShoppingBag className="w-3.5 h-3.5" />
               </Button>
             </div>
           </div>
           {product.stock < 5 && product.stock > 0 && (
-            <div className="text-xs text-warning">⚡ Plus que {product.stock} en stock</div>
+            <div className="text-[10px] font-semibold text-warning bg-warning/10 px-2 py-0.5 rounded-full inline-block">
+              ⚡ Plus que {product.stock} en stock
+            </div>
           )}
         </div>
       </div>

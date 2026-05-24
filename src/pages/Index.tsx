@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ShopLayout } from "@/components/shop/ShopLayout";
 import { ProductCard, type Product } from "@/components/shop/ProductCard";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Category = { id: string; name: string; slug: string; is_adult: boolean };
@@ -40,53 +40,67 @@ const Index = () => {
     ? products.filter((p) => p.category_id === activeCategory)
     : products;
 
+  const firstName = profile?.full_name?.split(" ")[0];
+
   return (
     <ShopLayout>
-      {/* Hero */}
-      <section className="mb-8">
-        <h1 className="font-display font-extrabold text-4xl md:text-5xl tracking-tight text-balance">
-          {profile?.full_name ? <>Salut, <span className="text-primary">{profile.full_name.split(" ")[0]}</span> 👋</> : <>Découvre la <span className="text-primary">collection</span></>}
-        </h1>
-        <p className="text-muted-foreground mt-2">Commande, partage, kiffe — livraison express.</p>
+      {/* Hero — chaleureux & personnel */}
+      <section className="mb-7">
+        <div className="bg-gradient-primary rounded-3xl p-6 text-white shadow-glow mb-1">
+          <p className="text-sm font-semibold opacity-80 mb-1">
+            {firstName ? `Bonjour ${firstName} 👋` : "Bienvenue 👋"}
+          </p>
+          <h1 className="font-display font-extrabold text-2xl leading-tight">
+            Trouve ce qu'il te faut
+          </h1>
+          <p className="text-sm opacity-75 mt-1 flex items-center gap-1">
+            <ShoppingBag className="w-3.5 h-3.5" />
+            Livraison rapide · Paiement sécurisé
+          </p>
+        </div>
       </section>
 
-      {/* Categories */}
+      {/* Catégories */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-6 -mx-6 px-6">
         <button
           onClick={() => setActiveCategory(null)}
           className={cn(
-            "shrink-0 px-4 py-2 rounded-full font-semibold text-sm transition-all border",
+            "shrink-0 px-4 py-2 rounded-full font-semibold text-sm transition-all",
             activeCategory === null
-              ? "bg-primary text-primary-foreground border-primary shadow-glow"
-              : "bg-card text-foreground border-border hover:border-primary"
+              ? "bg-primary text-white shadow-glow"
+              : "bg-white text-foreground border border-border hover:border-primary hover:text-primary"
           )}
         >
-          Tout
+          Tout voir
         </button>
         {categories.map((c) => (
           <button
             key={c.id}
             onClick={() => setActiveCategory(c.id)}
             className={cn(
-              "shrink-0 px-4 py-2 rounded-full font-semibold text-sm transition-all border flex items-center gap-1.5",
+              "shrink-0 px-4 py-2 rounded-full font-semibold text-sm transition-all flex items-center gap-1.5",
               activeCategory === c.id
-                ? "bg-primary text-primary-foreground border-primary shadow-glow"
-                : "bg-card text-foreground border-border hover:border-primary"
+                ? "bg-primary text-white shadow-glow"
+                : "bg-white text-foreground border border-border hover:border-primary hover:text-primary"
             )}
           >
-            {c.is_adult && <Sparkles className="w-3.5 h-3.5" />}
+            {c.is_adult && <Sparkles className="w-3 h-3" />}
             {c.name}
           </button>
         ))}
       </div>
 
-      {/* Products grid */}
+      {/* Grille produits */}
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+        <div className="flex flex-col items-center py-20 gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Chargement des produits…</p>
+        </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <p className="text-lg">Aucun produit pour le moment</p>
-          <p className="text-sm mt-2">Reviens bientôt !</p>
+        <div className="text-center py-20 text-muted-foreground space-y-3">
+          <ShoppingBag className="w-14 h-14 mx-auto opacity-25" />
+          <p className="font-semibold text-base">Aucun produit pour le moment</p>
+          <p className="text-sm">Reviens bientôt !</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
