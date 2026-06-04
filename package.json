@@ -88,5 +88,6 @@
     "vitest": "^3.2.4",
     "vite-plugin-pwa": "^0.20.0",
     "workbox-window": "^7.0.0"
-  }
+  },
+  "description": "Shop Smartly \u2014 boutique e-commerce mobile-first"
 }

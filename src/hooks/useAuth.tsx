@@ -2,7 +2,9 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-type Profile = {
+export type UserRole = "user" | "admin" | "super_admin";
+
+export type Profile = {
   id: string;
   user_id: string;
   full_name: string | null;
@@ -18,6 +20,7 @@ type AuthContextValue = {
   session: Session | null;
   profile: Profile | null;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   loading: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -30,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadProfileAndRole = async (uid: string) => {
@@ -38,7 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.from("user_roles").select("role").eq("user_id", uid),
     ]);
     setProfile(prof as Profile | null);
-    setIsAdmin(!!roles?.some((r) => r.role === "admin"));
+    const roleList = roles?.map((r) => r.role as UserRole) ?? [];
+    setIsSuperAdmin(roleList.includes("super_admin"));
+    // super_admin inherits admin rights
+    setIsAdmin(roleList.includes("admin") || roleList.includes("super_admin"));
   };
 
   const refreshProfile = async () => {
@@ -46,20 +53,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // 1. Listener FIRST
     const { data: sub } = supabase.auth.onAuthStateChange((_e, sess) => {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
-        // defer DB calls to avoid deadlock
         setTimeout(() => loadProfileAndRole(sess.user.id), 0);
       } else {
         setProfile(null);
         setIsAdmin(false);
+        setIsSuperAdmin(false);
       }
     });
 
-    // 2. Existing session
     supabase.auth.getSession().then(({ data: { session: sess } }) => {
       setSession(sess);
       setUser(sess?.user ?? null);
@@ -77,10 +82,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setProfile(null);
     setIsAdmin(false);
+    setIsSuperAdmin(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, isAdmin, loading, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ user, session, profile, isAdmin, isSuperAdmin, loading, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

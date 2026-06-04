@@ -2,7 +2,7 @@ import { NavLink, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import {
   LayoutDashboard, Package, ShoppingCart, Users, Crown, FolderTree,
-  ScrollText, LogOut, ArrowLeft, Sparkles
+  ScrollText, LogOut, ArrowLeft, Store
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,10 +28,10 @@ export function AdminLayout() {
         <div className="p-6 border-b border-sidebar-border">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
+              <Store className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="font-display font-extrabold text-lg leading-none">E-shop</div>
+              <div className="font-display font-extrabold text-lg leading-none">Shop Smartly</div>
               <div className="text-xs text-sidebar-accent-foreground/60 mt-0.5">Admin</div>
             </div>
           </div>
@@ -66,7 +66,7 @@ export function AdminLayout() {
       {/* Mobile top nav */}
       <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-sidebar border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-4 h-14">
-          <Sparkles className="w-5 h-5 text-primary" />
+          <Store className="w-5 h-5 text-primary" />
           <span className="font-display font-bold">Admin</span>
           <Button onClick={() => navigate("/")} variant="ghost" size="sm" className="ml-auto">Boutique</Button>
         </div>

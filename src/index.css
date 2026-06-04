@@ -1,159 +1,169 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ═══════════════════════════════════════════════════════════
-   DESIGN SYSTEM — Warm & Human Commerce
-   Palette chaleureuse : orangé/rose/crème. Convivial et accessible.
-   ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   SHOP SMARTLY — Design System
+   Palette : ivoire · terracotta · vert sauge
+   Typographie : Fraunces (titres) + Plus Jakarta Sans (corps)
+   Ambiance : marché artisanal moderne, chaleureux, humain
+   ═══════════════════════════════════════════ */
 
 @layer base {
   :root {
-    /* Surfaces — tons clairs chauds */
-    --background: 30 25% 97%;
-    --foreground: 20 20% 12%;
+    /* Surfaces ivoire chaudes */
+    --background: 38 28% 96%;
+    --foreground: 22 18% 14%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 20 20% 12%;
+    --card: 38 20% 99%;
+    --card-foreground: 22 18% 14%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 20 20% 12%;
+    --popover: 38 20% 99%;
+    --popover-foreground: 22 18% 14%;
 
-    /* Brand — corail / orange chaleureux */
-    --primary: 22 95% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 22 95% 65%;
+    /* Terracotta — couleur principale */
+    --primary: 15 72% 52%;
+    --primary-foreground: 38 28% 98%;
+    --primary-glow: 15 72% 62%;
 
-    /* Secondary — rose poudré */
-    --secondary: 340 60% 93%;
-    --secondary-foreground: 340 40% 30%;
+    /* Sauge — secondary */
+    --secondary: 145 22% 88%;
+    --secondary-foreground: 145 25% 28%;
 
-    --muted: 30 20% 93%;
-    --muted-foreground: 20 15% 50%;
+    --muted: 38 18% 92%;
+    --muted-foreground: 22 12% 52%;
 
-    /* Accent — rose vif */
-    --accent: 340 75% 55%;
-    --accent-foreground: 0 0% 100%;
+    /* Ocre doré — accent */
+    --accent: 38 85% 52%;
+    --accent-foreground: 22 18% 14%;
 
-    --destructive: 0 80% 55%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 38 28% 98%;
 
-    --success: 145 60% 40%;
-    --success-foreground: 0 0% 100%;
+    --success: 145 52% 38%;
+    --success-foreground: 38 28% 98%;
 
-    --warning: 38 90% 50%;
-    --warning-foreground: 20 20% 12%;
+    --warning: 38 85% 52%;
+    --warning-foreground: 22 18% 14%;
 
-    --border: 30 20% 88%;
-    --input: 30 20% 93%;
-    --ring: 22 95% 55%;
+    --border: 38 18% 88%;
+    --input: 38 18% 92%;
+    --ring: 15 72% 52%;
 
     --radius: 1rem;
 
-    /* Gradients chauds */
-    --gradient-primary: linear-gradient(135deg, hsl(22 95% 55%), hsl(340 75% 55%));
-    --gradient-accent: linear-gradient(135deg, hsl(340 75% 55%), hsl(280 70% 60%));
-    --gradient-hero: linear-gradient(160deg, hsl(30 100% 97%) 0%, hsl(340 60% 95%) 50%, hsl(22 80% 94%) 100%);
-    --gradient-premium: linear-gradient(135deg, hsl(38 90% 50%), hsl(22 95% 55%));
+    /* Gradients naturels */
+    --gradient-primary: linear-gradient(135deg, hsl(15 72% 52%), hsl(340 60% 52%));
+    --gradient-accent: linear-gradient(135deg, hsl(38 85% 52%), hsl(15 72% 52%));
+    --gradient-hero: linear-gradient(160deg,
+      hsl(38 35% 97%) 0%,
+      hsl(145 18% 94%) 40%,
+      hsl(15 18% 95%) 100%
+    );
+    --gradient-premium: linear-gradient(135deg, hsl(38 85% 52%), hsl(15 72% 52%));
 
-    /* Shadows douces */
-    --shadow-glow: 0 4px 20px hsl(22 95% 55% / 0.30);
-    --shadow-card: 0 2px 12px hsl(20 30% 15% / 0.08);
-    --shadow-elegant: 0 8px 30px hsl(20 30% 15% / 0.12);
+    /* Ombres douces et naturelles */
+    --shadow-glow: 0 4px 24px hsl(15 72% 52% / 0.22);
+    --shadow-card: 0 1px 8px hsl(22 18% 14% / 0.06), 0 4px 16px hsl(22 18% 14% / 0.04);
+    --shadow-elegant: 0 8px 32px hsl(22 18% 14% / 0.10), 0 2px 8px hsl(22 18% 14% / 0.06);
 
     /* Sidebar admin */
-    --sidebar-background: 20 20% 12%;
-    --sidebar-foreground: 30 25% 90%;
-    --sidebar-primary: 22 95% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 20 20% 18%;
-    --sidebar-accent-foreground: 30 25% 90%;
-    --sidebar-border: 20 20% 20%;
-    --sidebar-ring: 22 95% 55%;
-
-    --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --sidebar-background: 22 18% 12%;
+    --sidebar-foreground: 38 20% 92%;
+    --sidebar-primary: 15 72% 52%;
+    --sidebar-primary-foreground: 38 28% 98%;
+    --sidebar-accent: 22 18% 18%;
+    --sidebar-accent-foreground: 38 20% 92%;
+    --sidebar-border: 22 18% 20%;
+    --sidebar-ring: 15 72% 52%;
   }
 
   .dark {
-    --background: 20 20% 10%;
-    --foreground: 30 25% 95%;
-    --card: 20 20% 14%;
-    --card-foreground: 30 25% 95%;
-    --popover: 20 20% 14%;
-    --popover-foreground: 30 25% 95%;
-    --primary: 22 90% 58%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 20 20% 20%;
-    --secondary-foreground: 30 25% 90%;
-    --muted: 20 15% 20%;
-    --muted-foreground: 30 20% 60%;
-    --accent: 340 70% 58%;
-    --accent-foreground: 0 0% 100%;
-    --border: 20 15% 22%;
-    --input: 20 15% 20%;
-    --ring: 22 90% 58%;
+    --background: 22 18% 10%;
+    --foreground: 38 28% 94%;
+    --card: 22 18% 14%;
+    --card-foreground: 38 28% 94%;
+    --popover: 22 18% 14%;
+    --popover-foreground: 38 28% 94%;
+    --primary: 15 65% 56%;
+    --primary-foreground: 38 28% 98%;
+    --secondary: 145 20% 20%;
+    --secondary-foreground: 145 20% 80%;
+    --muted: 22 14% 20%;
+    --muted-foreground: 38 15% 60%;
+    --accent: 38 70% 52%;
+    --accent-foreground: 22 18% 14%;
+    --border: 22 14% 22%;
+    --input: 22 14% 20%;
+    --ring: 15 65% 56%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
   html, body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
   }
   h1, h2, h3, h4, h5 {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.01em;
+    font-family: 'Fraunces', Georgia, serif;
+    letter-spacing: -0.02em;
   }
 }
 
 @layer utilities {
-  .bg-gradient-primary { background: var(--gradient-primary); }
-  .bg-gradient-accent { background: var(--gradient-accent); }
-  .bg-gradient-hero { background: var(--gradient-hero); }
-  .bg-gradient-premium { background: var(--gradient-premium); }
-  .shadow-glow { box-shadow: var(--shadow-glow); }
-  .shadow-card { box-shadow: var(--shadow-card); }
-  .shadow-elegant { box-shadow: var(--shadow-elegant); }
-  .text-balance { text-wrap: balance; }
+  .bg-gradient-primary  { background: var(--gradient-primary); }
+  .bg-gradient-accent   { background: var(--gradient-accent); }
+  .bg-gradient-hero     { background: var(--gradient-hero); }
+  .bg-gradient-premium  { background: var(--gradient-premium); }
+  .shadow-glow     { box-shadow: var(--shadow-glow); }
+  .shadow-card     { box-shadow: var(--shadow-card); }
+  .shadow-elegant  { box-shadow: var(--shadow-elegant); }
+  .text-balance    { text-wrap: balance; }
+  .font-display    { font-family: 'Fraunces', Georgia, serif; }
 
-  /* Animations douces */
-  .animate-fade-in {
-    animation: fadeIn 0.4s ease-out;
-  }
-  .animate-slide-up {
-    animation: slideUp 0.3s ease-out;
-  }
-  .animate-pulse-glow {
-    animation: pulseGlow 2s ease-in-out infinite;
-  }
+  /* Animations */
+  .animate-fade-in  { animation: fadeIn 0.35s ease-out both; }
+  .animate-slide-up { animation: slideUp 0.3s ease-out both; }
+  .animate-pulse-glow { animation: pulseGlow 2.5s ease-in-out infinite; }
+  .animate-scale-in { animation: scaleIn 0.2s var(--transition-bounce) both; }
+
+  /* Safe areas PWA */
+  .pb-safe { padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+  .pt-safe { padding-top: max(1rem, env(safe-area-inset-top)); }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(22 95% 55% / 0.4); }
-  50% { box-shadow: 0 0 0 12px hsl(22 95% 55% / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 hsl(15 72% 52% / 0.35); }
+  50%       { box-shadow: 0 0 0 14px hsl(15 72% 52% / 0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 /* Scrollbar discrète */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Safe area pour PWA */
-.pb-safe { padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
-.pt-safe { padding-top: max(1rem, env(safe-area-inset-top)); }
+/* Texture de fond subtile */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c4a882' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: -1;
+}
