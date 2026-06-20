@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Loader2, Store } from "lucide-react";
@@ -26,24 +25,22 @@ export default function Auth() {
 
   const handleGoogleLogin = async () => {
     setBusy(true);
-    try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-        extraParams: { prompt: "select_account" },
-      });
-      if (result.error) {
-        console.error("OAuth error:", result.error);
-        toast.error("Erreur lors de la connexion Google");
-        setBusy(false);
-        return;
-      }
-      if (result.redirected) return;
-      navigate("/", { replace: true });
-    } catch (e) {
-      console.error(e);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}${window.location.pathname}`,
+        queryParams: {
+          access_type: "offline",
+          prompt: "select_account",
+        },
+      },
+    });
+    if (error) {
+      console.error("OAuth error:", error);
       toast.error("Erreur lors de la connexion Google");
       setBusy(false);
     }
+    // Sinon la page redirige vers Google — pas besoin de setBusy(false)
   };
 
   if (loading) {

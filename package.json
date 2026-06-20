@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
-    "@lovable.dev/cloud-auth-js": "^1.1.2",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
@@ -90,5 +89,5 @@
     "vitest": "^3.2.4",
     "workbox-window": "^7.0.0"
   },
-  "description": "Shop Smartly — boutique e-commerce mobile-first"
+  "description": "Shop Smartly \u2014 boutique e-commerce mobile-first"
 }
