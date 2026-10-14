@@ -13,12 +13,12 @@ export default defineConfig(({ mode }) => ({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
+      includeAssets: ["favicon.ico", "apple-touch-icon.png", "brand.svg"],
       manifest: {
         name: "Shop Smartly",
         short_name: "Shop Smartly",
         description: "Votre boutique en ligne — commandez facilement depuis votre téléphone",
-        theme_color: "#f97316",
+        theme_color: "#193f35",
         background_color: "#faf8f5",
         display: "standalone",
         orientation: "portrait",

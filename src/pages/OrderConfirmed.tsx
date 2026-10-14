@@ -15,13 +15,13 @@ export default function OrderConfirmed() {
           <CheckCircle2 className="w-12 h-12 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="font-display font-extrabold text-3xl mb-2">Commande envoyée !</h1>
+          <h1 className="font-display font-extrabold text-3xl mb-2">Commande enregistrée !</h1>
           <p className="text-muted-foreground">N° {id?.slice(0, 8).toUpperCase()}</p>
         </div>
         <div className="bg-card border border-border rounded-2xl p-6 text-left space-y-3 shadow-card">
           <div className="flex items-start gap-3">
             <MessageCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
-            <p className="text-sm">L'administrateur ({ADMIN_DISPLAY}) a reçu votre commande sur WhatsApp.</p>
+            <p className="text-sm">L'administrateur ({ADMIN_DISPLAY}) peut confirmer votre commande sur WhatsApp. Pensez à envoyer le message préparé.</p>
           </div>
           <div className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />

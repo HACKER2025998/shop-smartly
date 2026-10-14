@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Home, Heart, ShoppingBag, User, Store } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { Brand } from "./Brand";
+import { HelpChat } from "./HelpChat";
 import { cn } from "@/lib/utils";
 
 export function ShopLayout({ children }: { children: React.ReactNode }) {
@@ -18,11 +20,12 @@ export function ShopLayout({ children }: { children: React.ReactNode }) {
       setCartCount(data?.reduce((s, i) => s + i.quantity, 0) ?? 0);
     };
     load();
+    window.addEventListener("cart-updated", load);
     const ch = supabase
       .channel("cart-count")
       .on("postgres_changes", { event: "*", schema: "public", table: "cart_items", filter: `user_id=eq.${user.id}` }, load)
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => { window.removeEventListener("cart-updated", load); supabase.removeChannel(ch); };
   }, [user]);
 
   const tabs = [
@@ -34,18 +37,13 @@ export function ShopLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-gradient-hero pb-28">
-      {/* Header */}
+      <a href="#main-content" className="skip-link">Aller au contenu</a>{/* Header */}
       <header className="sticky top-0 z-40 bg-card/85 backdrop-blur-xl border-b border-border/60">
         <div className="container flex items-center justify-between h-16 gap-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow group-hover:scale-105 transition-all duration-200">
-              <Store className="w-5 h-5 text-white" strokeWidth={2.5} />
-            </div>
-            <span className="font-display font-bold text-xl text-foreground tracking-tight">Shop Smartly</span>
-          </Link>
+          <Brand />
 
-          {/* Right side */}
+          <nav aria-label="Navigation principale" className="hidden md:flex items-center gap-6 text-sm">{tabs.map(t => <Link key={t.to} to={t.to} aria-current={location.pathname === t.to ? "page" : undefined} className={location.pathname === t.to ? "font-bold text-primary" : "text-muted-foreground"}>{t.label}{t.badge ? ` (${t.badge})` : ""}</Link>)}</nav>{/* Right side */}
           <div className="flex items-center gap-2">
             {profile?.plan && profile.plan !== "free" && (
               <span className={cn(
@@ -70,10 +68,10 @@ export function ShopLayout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Page content */}
-      <main className="container py-6 animate-fade-in">{children}</main>
+      <main id="main-content" className="container py-6 md:py-10 animate-fade-in">{children}</main>
 
-      {/* Bottom navigation */}
-      <nav className="fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-2xl border-t border-border/60 pb-safe">
+      <footer className="container mt-14 border-t py-8 flex flex-wrap justify-between gap-4 text-xs text-muted-foreground"><span>Shop Smartly · Bien choisir. Simplement.</span><span>Prix en FCFA · Commandes accompagnées sur WhatsApp</span></footer><HelpChat />{/* Bottom navigation */}
+      <nav aria-label="Navigation mobile" className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-2xl border-t border-border/60 pb-safe">
         <div className="container grid grid-cols-4 h-16">
           {tabs.map((t) => {
             const isActive = location.pathname === t.to;

@@ -15,6 +15,7 @@ export type Product = {
   price: number;
   discounted_price: number | null;
   image_url: string | null;
+  image_urls?: string[];
   stock: number;
   required_plan: "free" | "medium" | "premium";
   category_id: string | null;
@@ -57,15 +58,16 @@ export function ProductCard({ product, isLiked, onLikeChange }: {
     if (locked) { toast.error(`Réservé au plan ${product.required_plan}`); return; }
     if (outOfStock) { toast.error("Rupture de stock"); return; }
     setBusy(true);
-    const { data: existing } = await supabase
+    const { data: existing, error: readError } = await supabase
       .from("cart_items").select("*")
       .eq("user_id", user.id).eq("product_id", product.id).maybeSingle();
-    if (existing) {
-      await supabase.from("cart_items").update({ quantity: existing.quantity + 1 }).eq("id", existing.id);
-    } else {
-      await supabase.from("cart_items").insert({ user_id: user.id, product_id: product.id, quantity: 1 });
-    }
+    if (readError) { setBusy(false); toast.error("Impossible de lire le panier"); return; }
+    const quantity = (existing?.quantity ?? 0) + 1;
+    if (quantity > product.stock) { setBusy(false); toast.error("La quantité totale dépasse le stock"); return; }
+    const { error } = existing ? await supabase.from("cart_items").update({ quantity }).eq("id", existing.id) : await supabase.from("cart_items").insert({ user_id: user.id, product_id: product.id, quantity });
     setBusy(false);
+    if (error) { toast.error("Ajout au panier impossible"); return; }
+    window.dispatchEvent(new Event("cart-updated"));
     setAdded(true);
     toast.success("Ajouté au panier");
     setTimeout(() => setAdded(false), 2000);
@@ -125,7 +127,7 @@ export function ProductCard({ product, isLiked, onLikeChange }: {
 
           {/* Like button */}
           <button
-            onClick={toggleLike}
+            aria-label={isLiked ? "Retirer des favoris" : "Ajouter aux favoris"} onClick={toggleLike}
             disabled={busy}
             className="absolute bottom-2 right-2 w-8 h-8 rounded-xl bg-white/90 backdrop-blur-sm shadow-card flex items-center justify-center hover:scale-110 active:scale-90 transition-all duration-150"
           >

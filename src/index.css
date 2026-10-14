@@ -167,3 +167,42 @@ body::before {
   pointer-events: none;
   z-index: -1;
 }
+
+/* Identité : papier crème, encre forêt, accents miel. */
+:root { --background: 40 35% 97%; --foreground: 155 20% 16%; --card: 40 30% 99%; --primary: 155 42% 18%; --primary-glow: 155 30% 30%; --primary-foreground: 40 35% 97%; --ring: 155 42% 18%; --accent: 35 62% 69%; --muted-foreground: 150 7% 40%; --border: 40 14% 84%; --radius: .65rem; --gradient-primary: linear-gradient(#193f35, #193f35); --gradient-hero: linear-gradient(#faf8f3, #faf8f3); --gradient-premium: linear-gradient(#7a582a,#7a582a); --shadow-glow: 0 3px 10px #193f3510; --shadow-card: 0 2px 8px #193f3506; }
+.container { max-width: 1240px; }
+.editorial-hero { display: grid; grid-template-columns: 1.25fr 1fr; min-height: 380px; border-bottom: 1px solid hsl(var(--border)); }
+.hero-copy { padding: 40px 25px 40px 0; }
+.eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .19em; color: hsl(var(--muted-foreground)); margin-bottom: 16px; }
+.hero-copy h1 { font-size: clamp(36px, 5vw, 64px); line-height: 1.12; font-weight: 400; }
+.hero-copy h1 em { color: #446553; font-weight: 400; }
+.hero-description { color: hsl(var(--muted-foreground)); line-height: 1.8; font-size: 14px; margin: 22px 0; }
+.hero-link { display: inline-flex; gap: 24px; align-items: center; border-bottom: 1px solid; padding-bottom: 9px; font-size: 13px; font-weight: 600; }
+.hero-art { position: relative; background: #e5ebdf; margin: 0 0 24px 24px; overflow: hidden; border-radius: 2px; }
+.hero-art svg { width: 100%; height: 340px; margin-top: 24px; }
+.art-label { position: absolute; left: 25px; top: 25px; font-size: 9px; letter-spacing: .18em; line-height: 1.8; }
+.art-caption { position: absolute; bottom: 20px; right: 24px; font-family: Georgia,serif; font-style: italic; font-size: 16px; }
+.service-strip { display: flex; justify-content: space-between; gap: 16px; padding: 20px 0; border-bottom: 1px solid hsl(var(--border)); font-size: 11px; color: hsl(var(--muted-foreground)); }
+.collection-heading { display: flex; justify-content: space-between; align-items: end; margin: 42px 0 25px; }
+.collection-heading .eyebrow { margin-bottom: 8px; }
+.collection-heading h2 { font-size: 34px; font-weight: 400; }
+.catalog-tools { display: flex; gap: 16px; margin-bottom: 22px; }
+.search-field { display: flex; align-items: center; gap: 12px; flex: 1; border: 1px solid hsl(var(--border)); padding: 12px 16px; background: hsl(var(--card)); border-radius: 6px; }
+.search-field input { width: 100%; outline: none; background: transparent; font-size: 13px; }
+.catalog-tools select { border: 1px solid hsl(var(--border)); padding: 10px; background: hsl(var(--card)); border-radius: 6px; font-size: 12px; }
+.category-list { display: flex; gap: 22px; overflow-x: auto; margin-bottom: 20px; border-bottom: 1px solid hsl(var(--border)); }
+.category-list button { white-space: nowrap; font-size: 12px; padding: 0 0 12px; border-bottom: 2px solid transparent; }
+.category-list button[aria-pressed=true] { border-color: hsl(var(--primary)); font-weight: 700; }
+.help-chat { position: fixed; bottom: 105px; right: 20px; z-index: 45; display: flex; flex-direction: column; align-items: end; gap: 12px; }
+.chat-launch { background: #193f35; color: #fff; display: flex; align-items: center; gap: 9px; padding: 13px 18px; border-radius: 30px; box-shadow: 0 4px 20px #193f3520; }
+.chat-panel { width: min(370px, calc(100vw - 32px)); background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 14px; box-shadow: 0 10px 40px #193f3520; overflow: hidden; }
+.chat-messages { max-height: min(290px, 35dvh); overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; font-size: 13px; line-height: 1.65; }
+.chat-answer { background: hsl(var(--muted)); padding: 12px; border-radius: 10px; margin-right: 20px; }
+.chat-user { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); padding: 10px 14px; border-radius: 10px; align-self: end; }
+.skip-link { position: fixed; top: -100px; left: 16px; z-index: 100; background: white; padding: 12px; }
+.skip-link:focus { top: 10px; }
+:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 4px; }
+input[type=checkbox] { accent-color: #193f35; }
+@media(min-width:768px) { .help-chat { bottom: 24px; right: 28px; } }
+@media(max-width:640px) { .editorial-hero { grid-template-columns: 1fr; } .hero-copy { padding: 18px 0 25px; } .hero-art { margin: 0 0 18px; height: 210px; } .hero-art svg { height: 225px; margin-top: 0; } .art-label { left: 16px; top: 16px; } .art-caption { right: 16px; bottom: 14px; } .service-strip { flex-wrap: wrap; gap: 10px; font-size: 10px; } .catalog-tools { flex-direction: column; gap: 8px; } .collection-heading { margin-top: 30px; } }
+@media(prefers-reduced-motion:reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

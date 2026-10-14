@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ShopLayout } from "@/components/shop/ShopLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { checkoutCart, checkoutError } from "@/lib/checkout";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2, ShoppingBag, MessageCircle, Loader2, Plus, Minus } from "lucide-react";
@@ -32,14 +32,18 @@ export default function Cart() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [notes, setNotes] = useState("");
+  const submittingRef = useRef(false);
+  const attempt = useRef<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   const load = async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("cart_items")
       .select("id, quantity, product:products(id, name, price, discounted_price, image_url, stock)")
       .eq("user_id", user.id);
-    setItems((data as unknown as CartRow[]) ?? []);
+    setLoadError(!!error);
+    if (!error) setItems(((data as unknown as CartRow[]) ?? []).filter(i => i.product));
     setLoading(false);
   };
 
@@ -51,76 +55,44 @@ export default function Cart() {
   const updateQty = async (id: string, q: number, max: number) => {
     if (q < 1) return remove(id);
     if (q > max) { toast.error("Stock insuffisant"); return; }
-    await supabase.from("cart_items").update({ quantity: q }).eq("id", id);
+    if (submittingRef.current) return;
+    const { error } = await supabase.from("cart_items").update({ quantity: q }).eq("id", id);
+    if (error) { toast.error("Modification du panier impossible"); return; }
+    window.dispatchEvent(new Event("cart-updated"));
     load();
   };
 
   const remove = async (id: string) => {
-    await supabase.from("cart_items").delete().eq("id", id);
+    if (submittingRef.current) return;
+    const { error } = await supabase.from("cart_items").delete().eq("id", id);
+    if (error) { toast.error("Suppression impossible"); return; }
+    window.dispatchEvent(new Event("cart-updated"));
     load();
   };
 
   const total = items.reduce((s, i) => s + effectivePrice(i.product) * i.quantity, 0);
 
   const validate = async () => {
-    if (!user || !profile || items.length === 0) return;
+    if (!user || items.length === 0 || submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
-
-    // 1. create order
-    const { data: order, error: orderErr } = await supabase
-      .from("orders")
-      .insert({
-        user_id: user.id,
-        total,
-        customer_phone: profile.phone,
-        customer_name: profile.full_name,
-        notes: notes || null,
-      })
-      .select()
-      .single();
-
-    if (orderErr || !order) {
-      setSubmitting(false);
-      toast.error("Erreur lors de la création");
-      return;
-    }
-
-    // 2. insert order items
-    const orderItemsPayload = items.map((i) => ({
-      order_id: order.id,
-      product_id: i.product.id,
-      product_name: i.product.name,
-      unit_price: effectivePrice(i.product),
-      quantity: i.quantity,
-      subtotal: effectivePrice(i.product) * i.quantity,
-    }));
-    await supabase.from("order_items").insert(orderItemsPayload);
-
-    // 3. clear cart
-    await supabase.from("cart_items").delete().eq("user_id", user.id);
-
-    // 4. log
-    await supabase.from("activity_logs").insert({
-      actor_id: user.id,
-      action: "order_created",
-      entity_type: "order",
-      entity_id: order.id,
-      metadata: { total, items_count: items.length },
-    });
-
-    // 5. open WhatsApp
-    const message = buildOrderWhatsAppMessage({
-      orderId: order.id,
-      customerName: profile.full_name ?? "",
-      customerPhone: profile.phone,
-      items: items.map((i) => ({ name: i.product.name, quantity: i.quantity, unitPrice: effectivePrice(i.product) })),
-      total,
-      notes: notes || undefined,
-    });
-    openWhatsApp(message);
-
-    setSubmitting(false);
-    navigate(`/commande-confirmee/${order.id}`);
+    const key = `shop-checkout-attempt:${user.id}`;
+    try {
+      if (!attempt.current) {
+        try { attempt.current = sessionStorage.getItem(key); } catch { /* In-memory retry remains available. */ }
+        attempt.current ??= crypto.randomUUID();
+        try { sessionStorage.setItem(key, attempt.current); } catch { /* Private storage may be disabled. */ }
+      }
+      const order = await checkoutCart(attempt.current, notes);
+      window.dispatchEvent(new Event("cart-updated"));
+      try { sessionStorage.removeItem(key); } catch { /* Optional storage. */ }
+      attempt.current = null;
+      navigate(`/commande-confirmee/${order.id}`);
+      openWhatsApp(buildOrderWhatsAppMessage({ orderId: order.id, customerName: order.customer_name ?? "", customerPhone: order.customer_phone, items: order.items, total: order.total, notes: order.notes ?? undefined }));
+    } catch (error) {
+      toast.error(checkoutError(error));
+      await load();
+    } finally { submittingRef.current = false; setSubmitting(false); }
   };
 
   if (loading) return <ShopLayout><div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div></ShopLayout>;
@@ -129,7 +101,7 @@ export default function Cart() {
     <ShopLayout>
       <h1 className="font-display font-extrabold text-3xl mb-6">Mon panier</h1>
 
-      {items.length === 0 ? (
+      {loadError ? <div role="alert" className="py-10 text-center"><p>Impossible de charger votre panier.</p><Button onClick={() => void load()} variant="outline" className="mt-4">Réessayer</Button></div> : items.length === 0 ? (
         <div className="text-center py-20 space-y-4">
           <ShoppingBag className="w-16 h-16 mx-auto text-muted-foreground opacity-30" />
           <p className="text-muted-foreground">Votre panier est vide</p>
@@ -147,11 +119,11 @@ export default function Cart() {
                 <div className="text-primary font-bold mt-1">{formatFCFA(effectivePrice(it.product))}</div>
                 <div className="flex items-center justify-between mt-2">
                   <div className="flex items-center border border-border rounded-lg">
-                    <button onClick={() => updateQty(it.id, it.quantity - 1, it.product.stock)} className="w-8 h-8 hover:bg-muted flex items-center justify-center"><Minus className="w-3 h-3" /></button>
+                    <button disabled={submitting} onClick={() => updateQty(it.id, it.quantity - 1, it.product.stock)} className="w-8 h-8 hover:bg-muted flex items-center justify-center"><Minus className="w-3 h-3" /></button>
                     <span className="w-8 text-center font-bold text-sm">{it.quantity}</span>
-                    <button onClick={() => updateQty(it.id, it.quantity + 1, it.product.stock)} className="w-8 h-8 hover:bg-muted flex items-center justify-center"><Plus className="w-3 h-3" /></button>
+                    <button disabled={submitting} onClick={() => updateQty(it.id, it.quantity + 1, it.product.stock)} className="w-8 h-8 hover:bg-muted flex items-center justify-center"><Plus className="w-3 h-3" /></button>
                   </div>
-                  <button onClick={() => remove(it.id)} className="text-destructive hover:text-destructive/80 p-2"><Trash2 className="w-4 h-4" /></button>
+                  <button disabled={submitting} onClick={() => remove(it.id)} className="text-destructive hover:text-destructive/80 p-2"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             </div>
@@ -160,7 +132,7 @@ export default function Cart() {
           <div className="bg-card border border-border rounded-2xl p-5 space-y-4 shadow-elegant mt-6">
             <div className="space-y-2">
               <Label htmlFor="notes">Notes pour la commande (optionnel)</Label>
-              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value.slice(0, 500))} placeholder="Adresse de livraison, instructions…" rows={3} />
+              <Textarea id="notes" disabled={submitting} value={notes} onChange={(e) => setNotes(e.target.value.slice(0, 500))} placeholder="Adresse de livraison, instructions…" rows={3} />
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-border">
               <span className="text-muted-foreground">Total</span>

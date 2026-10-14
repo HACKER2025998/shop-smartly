@@ -256,6 +256,7 @@ export type Database = {
           description: string | null
           discounted_price: number | null
           id: string
+          image_urls: string[]
           image_url: string | null
           is_active: boolean
           name: string
@@ -271,6 +272,7 @@ export type Database = {
           description?: string | null
           discounted_price?: number | null
           id?: string
+          image_urls?: string[]
           image_url?: string | null
           is_active?: boolean
           name: string
@@ -286,6 +288,7 @@ export type Database = {
           description?: string | null
           discounted_price?: number | null
           id?: string
+          image_urls?: string[]
           image_url?: string | null
           is_active?: boolean
           name?: string
@@ -370,6 +373,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      checkout_cart: { Args: { p_request_id: string; p_notes?: string | null }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

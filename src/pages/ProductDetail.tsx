@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatFCFA, effectivePrice } from "@/lib/format";
 import { ShareDialog } from "@/components/shop/ShareDialog";
+import { ProductGallery } from "@/components/shop/ProductGallery";
 import type { Product } from "@/components/shop/ProductCard";
 
 export default function ProductDetail() {
@@ -19,6 +20,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [qty, setQty] = useState(1);
+  const [adding, setAdding] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
@@ -58,14 +60,17 @@ export default function ProductDetail() {
     if (!user) { navigate("/auth"); return; }
     if (locked) { toast.error(`Réservé au plan ${product.required_plan.toUpperCase()}`); return; }
     if (product.stock < qty) { toast.error("Stock insuffisant"); return; }
-    const { data: existing } = await supabase
+    setAdding(true);
+    const { data: existing, error: readError } = await supabase
       .from("cart_items").select("*")
       .eq("user_id", user.id).eq("product_id", product.id).maybeSingle();
-    if (existing) {
-      await supabase.from("cart_items").update({ quantity: existing.quantity + qty }).eq("id", existing.id);
-    } else {
-      await supabase.from("cart_items").insert({ user_id: user.id, product_id: product.id, quantity: qty });
-    }
+    if (readError) { setAdding(false); toast.error("Impossible de lire le panier"); return; }
+    const quantity = (existing?.quantity ?? 0) + qty;
+    if (quantity > product.stock) { setAdding(false); toast.error("La quantité totale dépasse le stock"); return; }
+    const { error } = existing ? await supabase.from("cart_items").update({ quantity }).eq("id", existing.id) : await supabase.from("cart_items").insert({ user_id: user.id, product_id: product.id, quantity });
+    setAdding(false);
+    if (error) { toast.error("Ajout au panier impossible"); return; }
+    window.dispatchEvent(new Event("cart-updated"));
     toast.success(`${qty} × ajouté au panier`);
   };
 
@@ -76,12 +81,8 @@ export default function ProductDetail() {
       </button>
 
       <div className="grid md:grid-cols-2 gap-8">
-        <div className="relative aspect-square rounded-3xl overflow-hidden bg-muted shadow-elegant">
-          {product.image_url ? (
-            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="w-20 h-20 opacity-20" /></div>
-          )}
+        <div className="relative">
+          <ProductGallery name={product.name} cover={product.image_url} images={product.image_urls} />
           {locked && (
             <div className="absolute inset-0 bg-background/70 backdrop-blur-md flex flex-col items-center justify-center gap-3">
               <Lock className="w-12 h-12 text-primary" />
@@ -124,7 +125,7 @@ export default function ProductDetail() {
           )}
 
           <div className="flex gap-3 pt-4">
-            <Button onClick={addToCart} disabled={product.stock < 1 || locked} className="flex-1 h-14 bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow font-semibold text-base">
+            <Button onClick={addToCart} disabled={adding || product.stock < 1 || locked} className="flex-1 h-14 bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-glow font-semibold text-base">
               <ShoppingBag className="w-5 h-5 mr-2" /> Ajouter au panier
             </Button>
             <Button onClick={toggleLike} variant="outline" size="icon" className="h-14 w-14">

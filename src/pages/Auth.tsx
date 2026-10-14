@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { Brand } from "@/components/shop/Brand";
 import { Loader2, Store } from "lucide-react";
 
 export default function Auth() {
@@ -54,16 +55,7 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-gradient-hero flex flex-col items-center justify-center p-6">
       {/* Logo */}
-      <div className="flex items-center gap-3 mb-10">
-        <div className="w-14 h-14 rounded-3xl bg-gradient-primary shadow-glow flex items-center justify-center">
-          <Store className="w-7 h-7 text-white" />
-        </div>
-        <div>
-          <div className="font-display font-extrabold text-3xl text-foreground leading-none">Shop Smartly</div>
-          <div className="text-sm text-muted-foreground mt-0.5">Votre boutique préférée</div>
-        </div>
-      </div>
-
+      <div className="mb-10"><Brand /></div>
       {/* Card connexion */}
       <div className="w-full max-w-sm">
         <div className="bg-white rounded-3xl shadow-elegant p-8 border border-border">

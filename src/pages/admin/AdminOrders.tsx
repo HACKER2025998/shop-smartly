@@ -62,12 +62,7 @@ export default function AdminOrders() {
     const { error } = await supabase.from("orders").update({ status, admin_notes: adminNotes || null }).eq("id", selected.id);
     if (error) { toast.error(error.message); return; }
 
-    // increment purchase_count if validated/delivered (transitions only — simple version)
-    if ((status === "validated" || status === "delivered") && selected.status === "pending") {
-      const { data: prof } = await supabase.from("profiles").select("purchase_count").eq("user_id", selected.user_id).maybeSingle();
-      if (prof) await supabase.from("profiles").update({ purchase_count: (prof.purchase_count ?? 0) + 1 }).eq("user_id", selected.user_id);
-    }
-
+    // Stock and purchase counters are managed transactionally by Supabase.
     await supabase.from("activity_logs").insert({
       actor_id: user?.id, action: `order_${status}`, entity_type: "order", entity_id: selected.id,
       metadata: { admin_notes: adminNotes },

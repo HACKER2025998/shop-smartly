@@ -22,6 +22,7 @@ type Product = {
   price: number;
   discounted_price: number | null;
   image_url: string | null;
+  image_urls?: string[];
   stock: number;
   stock_threshold: number;
   category_id: string | null;
@@ -40,12 +41,13 @@ const productSchema = z.object({
   category_id: z.string().uuid().nullable(),
   required_plan: z.enum(["free", "medium", "premium"]),
   is_active: z.boolean(),
-  image_url: z.string().nullable(),
+  image_url: z.string().url().nullable(),
+  image_urls: z.array(z.string().url()).max(8).optional(),
 });
 
 const empty: Omit<Product, "id"> = {
   name: "", description: "", price: 0, discounted_price: null,
-  image_url: null, stock: 0, stock_threshold: 5,
+  image_url: null, image_urls: [], stock: 0, stock_threshold: 5,
   category_id: null, required_plan: "free", is_active: true,
 };
 
@@ -72,17 +74,24 @@ export default function AdminProducts() {
   useEffect(() => { load(); }, []);
 
   const openCreate = () => { setEditing(null); setForm(empty); setOpen(true); };
-  const openEdit = (p: Product) => { setEditing(p); setForm({ ...p }); setOpen(true); };
+  const openEdit = (p: Product) => { setEditing(p); setForm({ ...p, image_urls: p.image_urls ?? (p.image_url ? [p.image_url] : []) }); setOpen(true); };
 
-  const handleUpload = async (file: File) => {
+  const handleUpload = async (files: File[]) => {
+    const existing = form.image_urls ?? (form.image_url ? [form.image_url] : []);
+    if (existing.length + files.length > 8) { toast.error("Maximum 8 photos"); return; }
+    const extensions: Record<string,string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+    if (files.some(f => !extensions[f.type] || f.size > 5242880)) { toast.error("JPG, PNG ou WebP, 5 Mo maximum par photo"); return; }
     setUploading(true);
-    const ext = file.name.split(".").pop();
-    const path = `${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("product-images").upload(path, file);
-    if (error) { toast.error(error.message); setUploading(false); return; }
-    const { data } = supabase.storage.from("product-images").getPublicUrl(path);
-    setForm((f) => ({ ...f, image_url: data.publicUrl }));
-    setUploading(false);
+    const uploaded: string[] = [];
+    try {
+      for (const file of files) {
+        const path = `${crypto.randomUUID()}.${extensions[file.type]}`;
+        const { error } = await supabase.storage.from("product-images").upload(path, file, { contentType: file.type });
+        if (error) throw error;
+        uploaded.push(supabase.storage.from("product-images").getPublicUrl(path).data.publicUrl);
+      }
+    } catch { toast.error("Envoi incomplet : les photos réussies sont conservées dans le formulaire"); }
+    finally { const images = [...existing,...uploaded]; setForm(f => ({ ...f, image_url: images[0] ?? null, image_urls: images })); setUploading(false); }
   };
 
   const save = async () => {
@@ -100,15 +109,16 @@ export default function AdminProducts() {
       required_plan: parsed.data.required_plan,
       is_active: parsed.data.is_active,
       image_url: parsed.data.image_url,
+      ...(form.image_urls && (form.image_urls.length > 1 || editing?.image_urls !== undefined) ? { image_urls: parsed.data.image_urls ?? [] } : {}),
     };
     if (editing) {
       const { error } = await supabase.from("products").update(payload).eq("id", editing.id);
-      if (error) { toast.error(error.message); setSaving(false); return; }
+      if (error) { toast.error(error.message.includes("image_urls") ? "Appliquez la migration galerie dans Supabase pour enregistrer plusieurs photos." : error.message); setSaving(false); return; }
       await supabase.from("activity_logs").insert({ actor_id: user?.id, action: "product_updated", entity_type: "product", entity_id: editing.id });
       toast.success("Produit mis à jour");
     } else {
       const { data, error } = await supabase.from("products").insert(payload).select().single();
-      if (error) { toast.error(error.message); setSaving(false); return; }
+      if (error) { toast.error(error.message.includes("image_urls") ? "Appliquez la migration galerie dans Supabase pour enregistrer plusieurs photos." : error.message); setSaving(false); return; }
       await supabase.from("activity_logs").insert({ actor_id: user?.id, action: "product_created", entity_type: "product", entity_id: data.id });
       toast.success("Produit créé !");
     }
@@ -238,10 +248,10 @@ export default function AdminProducts() {
               </Select>
             </div>
             <div>
-              <Label>Image du produit</Label>
-              <Input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} disabled={uploading} />
+              <Label>Photos du produit</Label><p className="text-xs text-muted-foreground mb-2">8 photos maximum, 5 Mo chacune. La première est la couverture.</p>
+              <Input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={(e) => { const files = Array.from(e.target.files ?? []); if (files.length) void handleUpload(files); e.target.value = ""; }} disabled={uploading} />
               {uploading && <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" />Upload en cours…</p>}
-              {form.image_url && <img src={form.image_url} alt="" className="mt-2 w-full h-32 rounded-2xl object-cover" />}
+              <div className="flex gap-2 flex-wrap mt-3">{(form.image_urls ?? (form.image_url ? [form.image_url] : [])).map((url,i) => <div key={url} className="w-24 space-y-1"><img src={url} alt={`Photo ${i+1}`} className="w-24 h-24 object-cover rounded-lg"/><button type="button" disabled={uploading} className="text-xs underline" onClick={() => setForm(f => { const images = (f.image_urls ?? []).filter(u => u !== url); return { ...f, image_urls: images, image_url: images[0] ?? null }; })}>Retirer</button><button type="button" disabled={uploading} className="block text-xs underline" onClick={() => setForm(f => ({ ...f, image_url: url, image_urls: [url,...(f.image_urls ?? []).filter(u => u !== url)] }))}>{i === 0 ? "Couverture" : "Choisir en couverture"}</button></div>)}</div>
             </div>
             <div className="flex items-center justify-between rounded-2xl border border-border p-4">
               <div>
@@ -253,7 +263,7 @@ export default function AdminProducts() {
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
-            <Button onClick={save} className="bg-primary text-white" disabled={saving}>
+            <Button onClick={save} className="bg-primary text-white" disabled={saving || uploading}>
               {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               {editing ? "Enregistrer" : "Créer le produit"}
             </Button>
@@ -263,4 +273,3 @@ export default function AdminProducts() {
     </div>
   );
 }
-
