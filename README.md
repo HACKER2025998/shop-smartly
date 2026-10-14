@@ -59,3 +59,6 @@ Ouvre le lien dans Safari → bouton Partager → "Sur l'écran d'accueil"
 - `public/pwa-192x192.png` — Icône PWA
 - `public/pwa-512x512.png` — Icône PWA HD
 - `public/apple-touch-icon.png` — Icône iOS
+
+
+<img width="1917" height="1022" alt="Capture d&#39;écran 2026-10-14 232951" src="https://github.com/user-attachments/assets/c532a51f-de5b-4700-a34d-8b5e689cfe57" />
